@@ -1,6 +1,6 @@
 // Open source Project with MIT License 
 // https://github.com/treebhoph/USMResize-Photoshop
-// My Facebook:  https://www.facebook.com/tong.naja.735
+// Facebook:  https://www.facebook.com/tong.naja.735
 var obj = new USMResize();
 obj.resize();
 	
