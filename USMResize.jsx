@@ -1,7 +1,15 @@
 // Open source Project with MIT License 
-// https://github.com/treebhoph/USMResize-Photoshop
+// Check new version at https://github.com/treebhoph/USMResize-Photoshop
+// My Facebook https://www.facebook.com/tong.naja.735
+//
+//====================================================================
+// HOW
+//1 Copy USMResize.jsx to folder "presets/script" insides "Adobe Photoshop"  folder.
+//2 Lunch Photoshop, Click to a menu "File>Scripts>USMResize"
+//====================================================================
+
 var obj = new USMResize();
-obj.resize();
+obj.run();
 	
 function USMResize( ) {
 
@@ -9,25 +17,21 @@ function USMResize( ) {
 	app.preferences.typeUnits = TypeUnits.PIXELS;
 	app.displayDialogs = DialogModes.NO;
 
-	var props = { stepResize:500, amount:200, radius:0.2, threshold:0 };
+	var props = { stepResize:500, amount:100, radius:0.2, threshold:0 };
 	var settings = { isBatchProcessing:false, preferSize:0, separatorDir:'/', inputFolderObj:null};
 	var win = null;
 
 	 
-	this.resize = function() {
+	 /**
+	 *	Entry point function
+	 */
+	this.run = function() {
 		win = new MyUI().getWindow();
 		win.batchPanel.visible = win.qualityPanel.visible = settings.isBatchProcessing;
 		win.pogressPanel.visible = false;
 		win.graphics.backgroundColor = win.graphics.newBrush(win.graphics.BrushType.SOLID_COLOR, [0.31, 0.31, 0.31]); 
+	
 		var rdoSizes = win.preferSizePanel.preferSizeGroup.children;
-		
-		win.batchPanel.pathGroup.btnSelectInputDir.onClick = function() {
-			var inputFolder = Folder.selectDialog("Choose a input folder","Choose a input folder");
-			if( inputFolder != null ) {
-				settings.inputFolderObj = inputFolder;
-				win.batchPanel.pathGroup.txtInputPath.text = inputFolder.path + settings.separatorDir + inputFolder.name;
-			}
-		}
 		
 		win.bottomGroup.btnOK.onClick = function(){
 			settings.preferSize = 0;
@@ -80,6 +84,14 @@ function USMResize( ) {
 			alert("\tF I N I S H \t\t", " ");
 			
 		}
+		
+		win.batchPanel.pathGroup.btnSelectInputDir.onClick = function() {
+			var inputFolder = Folder.selectDialog("Choose a input folder","Choose a input folder");
+			if( inputFolder != null ) {
+				settings.inputFolderObj = inputFolder;
+				win.batchPanel.pathGroup.txtInputPath.text = inputFolder.path + settings.separatorDir + inputFolder.name;
+			}
+		}
 
 		win.bottomGroup.btnClose.onClick = function(){
 			win.close();
@@ -98,32 +110,144 @@ function USMResize( ) {
 			win.preferSizePanel.preferSizeGroup.size0.value = true;
 		}
 		
-		win.preferSizePanel.preferSizeGroup.txtCustomSize.addEventListener("keyup", keybordInputFilter_IntNumber ); 
+	
+		/**
+		* Custom Size
+		*/
+		win.preferSizePanel.preferSizeGroup.txtCustomSize.addEventListener("keyup", keybordInputFilter_IntNumber);
+
+		win.preferSizePanel.preferSizeGroup.txtCustomSize.addEventListener("blur", function( e ){
+			
+			if( this.text.length == 0 ) {
+				return;
+			}
+			
+			if( parseInt(this.text) == 0 )
+				this.text = 2100;
+			else if( parseInt(this.text) < 50 )
+				this.text = 50;
+			
+		}); 		
 		
-		win.preferSizePanel.preferSizeGroup.txtCustomSize.addEventListener("keyup", function( e ){
-			var validValue = keybordInputFilter_IntNumber( e );
+		
+		
+		/**
+		* Amount
+		*/
+		win.USMPanel.amountGroup.slAmount.onChanging = function () {
+			win.USMPanel.amountGroup.txtAmount.text = parseInt(win.USMPanel.amountGroup.slAmount.value);
+			usmSetting_UpdateUI();
+		} 
+		
+		win.USMPanel.amountGroup.txtAmount.addEventListener("keyup", function( e ){
+			keybordInputFilter_IntNumber( e );
+			
+			if( this.text.length > 0 ) {
+				if( parseInt( this.text ) > 500 )
+					this.text = 500;
+				
+				win.USMPanel.amountGroup.slAmount.value = parseInt(this.text);
+			}
+			
+			usmSetting_UpdateUI();
 		}); 
 		
+		win.USMPanel.amountGroup.txtAmount.addEventListener("blur", function( e ){
+			if( this.text.length == 0 )
+				this.text = 0;
+			else if( parseInt(this.text) > 500 )
+				this.text = 500;
+			
+			win.USMPanel.amountGroup.slAmount.value = parseInt(this.text);
+			usmSetting_UpdateUI();
+		}); 
+		
+		
+		
+		/**
+		* Radius
+		*/
+		win.USMPanel.radiustGroup.slRadius.onChanging = function () {
+			win.USMPanel.radiustGroup.txtRadius.text = parseFloat(win.USMPanel.radiustGroup.slRadius.value).toFixed(1);
+			
+			if( this.text.length > 0 )
+				win.USMPanel.radiustGroup.slRadius.value = parseInt(this.text);
+			
+			usmSetting_UpdateUI();
+		} 
+		
+		win.USMPanel.radiustGroup.txtRadius.addEventListener("keyup", function( e ){
+			keybordInputFilter_FloatNumber( e );
+			
+			if( this.text.length > 0 ) {
+				if( parseFloat( this.text ) > 10 )
+					this.text = 10;
+				
+				win.USMPanel.radiustGroup.slRadius.value = parseFloat(this.text);
+			}
+			
+			usmSetting_UpdateUI();
+		}); 
+		
+		win.USMPanel.radiustGroup.txtRadius.addEventListener("blur", function( e ){
+			if( this.text.length == 0 )
+				this.text = 0;
+			else if( parseInt(this.text) > 10 )
+				this.text = 10;
+			
+			win.USMPanel.radiustGroup.slRadius.value = parseFloat(this.text);
+			usmSetting_UpdateUI();
+		}); 
+		
+		
+		/**
+		* Threshold
+		*/
+		win.USMPanel.thresholdGroup.slThreshold.onChanging = function () {
+			win.USMPanel.thresholdGroup.txtThreshold.text = parseInt(win.USMPanel.thresholdGroup.slThreshold.value);
+			usmSetting_UpdateUI();
+		} 
+		
+		win.USMPanel.thresholdGroup.txtThreshold.addEventListener("keyup", function( e ){
+			keybordInputFilter_IntNumber( e );
+			
+			if( this.text.length > 0 ) {
+				if( parseInt( this.text ) > 255 )
+					this.text = 255;
+				
+				win.USMPanel.thresholdGroup.slThreshold.value = parseInt(this.text);
+			}
+			
+			usmSetting_UpdateUI();
+		}); 
+		
+		win.USMPanel.thresholdGroup.txtThreshold.addEventListener("blur", function( e ){
+			if( this.text.length == 0 )
+				this.text = 0;
+			else if( parseInt(this.text) > 255 )
+				this.text = 255;
+			
+			win.USMPanel.thresholdGroup.slThreshold.value = parseInt(this.text);
+			usmSetting_UpdateUI();
+		}); 
+		
+		
+		/**
+		* Quality
+		*/
 		win.qualityPanel.qualityGroup.slQuailty.onChanging = function () {
 			win.qualityPanel.qualityGroup.txtQuality.text = parseInt(win.qualityPanel.qualityGroup.slQuailty.value);
 		} 
 		
-		
 		win.qualityPanel.qualityGroup.txtQuality.addEventListener("keyup", function( e ){
-			var validValue = keybordInputFilter_IntNumber( e );
-			if( validValue ) {
-	
-				if( validValue > 100 )
-					validValue = 100;
-				if( validValue.toString().length > 1 && validValue < 50 )
-					validValue = 50;
-				
-				win.qualityPanel.qualityGroup.slQuailty.value = validValue;
-				this.text = validValue;
-			} else {
-				win.qualityPanel.qualityGroup.slQuailty.value = 0;
-			}
+			keybordInputFilter_IntNumber( e );
 			
+			if( this.text.length > 0 ) {
+				if( parseInt( this.text ) > 100 )
+					this.text = 100;
+				
+				win.qualityPanel.qualityGroup.slQuailty.value = parseInt(this.text);
+			}
 		}); 
 		
 		win.qualityPanel.qualityGroup.txtQuality.addEventListener("blur", function( e ){
@@ -139,67 +263,9 @@ function USMResize( ) {
 		});
 		
 		
-		//Amount
-		win.USMPanel.amountGroup.slAmount.onChanging = function () {
-			win.USMPanel.amountGroup.txtAmount.text = parseInt(win.USMPanel.amountGroup.slAmount.value);
-			usmSettingsChanged();
-		} 
-		
-		win.USMPanel.amountGroup.txtAmount.addEventListener("keyup", function( e ){
-			var validValue = keybordInputFilter_IntNumber( e );
-			if( validValue ) {
-				if( validValue > 500 )
-					validValue = 500;
-				win.USMPanel.amountGroup.slAmount.value = validValue;
-				this.text = validValue;
-			} else {
-				win.USMPanel.amountGroup.slAmount.value = 0;
-			}
-			
-			usmSettingsChanged();
-		}); 
-		
-		
-		
-		win.USMPanel.radiustGroup.slRadius.onChanging = function () {
-			win.USMPanel.radiustGroup.txtRadius.text = parseFloat(win.USMPanel.radiustGroup.slRadius.value).toFixed(1);
-			usmSettingsChanged();
-		} 
-		
-		win.USMPanel.radiustGroup.txtRadius.addEventListener("keyup", function( e ){
-			var validValue = keybordInputFilter_FloatNumber( e );
-			if( validValue ) {
-				if( validValue > 10 )
-					validValue = 10;
-				win.USMPanel.radiustGroup.slRadius.value = validValue;
-				this.text = validValue;
-			} else {
-				win.USMPanel.radiustGroup.slRadius.value = 0;
-			}
-			
-			usmSettingsChanged();
-		}); 
-		
-		
-		win.USMPanel.thresholdGroup.slThreshold.onChanging = function () {
-			win.USMPanel.thresholdGroup.txtThreshold.text = parseInt(win.USMPanel.thresholdGroup.slThreshold.value);
-			usmSettingsChanged();
-		} 
-		
-		win.USMPanel.thresholdGroup.txtThreshold.addEventListener("keyup", function( e ){
-			var validValue = keybordInputFilter_IntNumber( e );
-			if( validValue ) {
-				if( validValue > 255 )
-					validValue = 255;
-				win.USMPanel.thresholdGroup.slThreshold.value = validValue;
-				this.text = validValue;
-			} else {
-				win.USMPanel.thresholdGroup.slThreshold.value = 0;
-			}
-			
-			usmSettingsChanged();
-		}); 
-		
+		/**
+		*	USM Settings selection
+		*/
 		win.USMPanel.presetGroup.preset1.onClick = function(){
 			applyUSMSelection(this);
 		}
@@ -212,7 +278,19 @@ function USMResize( ) {
 		win.show();
 	}
 	
-	usmSettingsChanged = function(){
+	applyUSMSelection = function( obj ) {
+		var settings = obj.setting.split("|");
+		
+		win.USMPanel.amountGroup.slAmount.value = parseInt(settings[0]);
+		win.USMPanel.radiustGroup.slRadius.value = parseFloat(settings[1]);
+		win.USMPanel.thresholdGroup.slThreshold.value = parseInt(settings[2]);
+			
+		win.USMPanel.amountGroup.txtAmount.text = parseInt(win.USMPanel.amountGroup.slAmount.value);
+		win.USMPanel.radiustGroup.txtRadius.text = parseFloat(win.USMPanel.radiustGroup.slRadius.value);
+		win.USMPanel.thresholdGroup.txtThreshold.text = parseInt(win.USMPanel.thresholdGroup.slThreshold.value);
+	}
+	
+	usmSetting_UpdateUI = function(){
 		var amount = parseInt(win.USMPanel.amountGroup.slAmount.value);
 		var radius = parseFloat(win.USMPanel.radiustGroup.slRadius.value).toFixed(1);
 		var threshold = parseInt(win.USMPanel.thresholdGroup.slThreshold.value);
@@ -248,7 +326,7 @@ function USMResize( ) {
 			
 			percentCompleted = parseInt((( i + 1 ) * 100) / fileList.length);
 			win.pogressPanel.percentGroup.lblPercent.text = percentCompleted + "%";
-			win.pogressPanel.percentGroup.lblTotal.text = "[ "+(i + 1)+" / " + fileList.length + " images ]     ";
+			win.pogressPanel.percentGroup.lblTotal.text = "[ "+(i + 1)+" / " + fileList.length + " images ]             ";
 			win.pogressPanel.progressCompleted.value = percentCompleted;
 		}
 		
@@ -261,14 +339,8 @@ function USMResize( ) {
 	
 	keybordInputFilter_IntNumber = function( e ) {
 		var keyName = e.keyName.toLowerCase();
-		if( keyName == "backspace" || keyName == "tab" || keyName == "enter" || keyName == "delete" || keyName == "space"  ) {
-			if( e.target.length > 0 ) {
-				e.target.text = parseInt(e.target.text);
-			} else {
-				e.target.text = 0;
-			}
-			
-			return  parseInt(e.target.text);
+		if( keyName == "backspace" || keyName == "tab" || keyName == "enter" || keyName == "delete" || keyName == "space" || keyName == "left" || keyName == "right" ) {
+			return;
 		}
 	
 		if( ! isInteger(keyName) ) {
@@ -290,38 +362,27 @@ function USMResize( ) {
 				else
 					e.target.text = "";
 		
-				alert("Accept Number Only", "Notice", true);
+				alert("Accept Number only", "Notice", true);
 			}
 		
 			e.target.active = true;
-		} else {
-			e.target.text = parseInt(e.target.text);
-		}
+		} 
 		
-		return parseInt(e.target.text);
 	}
 	
 	
 	keybordInputFilter_FloatNumber = function( e ) {
 		var keyName = e.keyName.toLowerCase();
-		var keyCode = e.keyIdentifier.toLowerCase();
-		
 		if( keyName == "backspace" || keyName == "tab" || keyName == "enter" || keyName == "delete" || keyName == "space" || keyName == "left" || keyName == "right" ) {
-			if( e.target.length > 0 ) {
-				e.target.text = parseFloat(e.target.text);
-			} else {
-				e.target.text = 0;
-			}
-			
-			return  parseFloat(e.target.text);
+			return;
 		}
 		
+		var keyCode = e.keyIdentifier.toLowerCase();
 		if( keyCode == "u+002e" ) {
 			var text = e.target.text;
 			var firstIndex = text.indexOf( "." );
 			if(firstIndex > -1) {
 				text = text.substr(firstIndex + 1);
-				
 				if( text.length > 0 && text.indexOf(".") > -1 ) {
 					e.target.text = e.target.text.substr(0, firstIndex + text.indexOf(".") + 1);
 				}
@@ -348,29 +409,13 @@ function USMResize( ) {
 				else
 					e.target.text = "";
 		
-				alert("Accept Number Only", "Notice", true);
+				alert("Accept Number only", "Notice", true);
 			}
 		
 			e.target.active = true;
-		} else {
-			e.target.text = parseFloat(e.target.text);
-		}
-		
-		return parseFloat(e.target.text);
+		} 
 	}
 	
-	
-	applyUSMSelection = function( obj ) {
-		var settings = obj.setting.split("|");
-		
-		win.USMPanel.amountGroup.slAmount.value = parseInt(settings[0]);
-		win.USMPanel.radiustGroup.slRadius.value = parseFloat(settings[1]);
-		win.USMPanel.thresholdGroup.slThreshold.value = parseInt(settings[2]);
-			
-		win.USMPanel.amountGroup.txtAmount.text = parseInt(win.USMPanel.amountGroup.slAmount.value);
-		win.USMPanel.radiustGroup.txtRadius.text = parseFloat(win.USMPanel.radiustGroup.slRadius.value);
-		win.USMPanel.thresholdGroup.txtThreshold.text = parseInt(win.USMPanel.thresholdGroup.slThreshold.value);
-	}
 	
 	resizeDocument = function( doc ){
 		if( doc == null ) return;
@@ -429,6 +474,7 @@ function USMResize( ) {
 				exportOptions.interlaced = false; 
 				exportOptions.optimized = true;
 				exportOptions.transparency = true;
+				exportOptions.includeProfile = true;
 				
 				doc.exportDocument( file, ExportType.SAVEFORWEB, exportOptions );
 			} else {
@@ -496,7 +542,7 @@ function MyUI() {
 				}\
 				presetGroup: Group { \
 					orientation: 'row', \
-					preset1:RadioButton{ text:'Smooth sharpen', setting:'100|0.2|0', value:true }, \
+					preset1:RadioButton{ text:'Soft sharpen', setting:'100|0.2|0', value:true }, \
 					preset2:RadioButton{ text:'Hard sharpen',  setting:'200|0.2|0', value:false }, \
 				}\
 			},\
@@ -532,8 +578,8 @@ function MyUI() {
 				orientation: 'column', \
 				alignChildren: 'right', \
 				percentGroup : Group { \
-					lblPercent: StaticText { text: ' 0%' }, \
-					lblTotal:StaticText{text:'[ 0 / 0 images ]'},\
+					lblPercent: StaticText { text: '    0%' }, \
+					lblTotal:StaticText{text:'[    0 / 0    images   ]'},\
 				}\
 				progressCompleted:Progressbar{size:[410,15], value:0}\
 			},\
