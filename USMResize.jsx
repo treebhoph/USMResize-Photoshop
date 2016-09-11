@@ -1,6 +1,5 @@
 // Open source Project with MIT License 
 // https://github.com/treebhoph/USMResize-Photoshop
-// Facebook:  https://www.facebook.com/tong.naja.735
 var obj = new USMResize();
 obj.resize();
 	
@@ -13,12 +12,13 @@ function USMResize( ) {
 	var props = { stepResize:500, amount:200, radius:0.2, threshold:0 };
 	var settings = { isBatchProcessing:false, preferSize:0, separatorDir:'/', inputFolderObj:null};
 	var win = null;
-	
+
+	 
 	this.resize = function() {
 		win = new MyUI().getWindow();
 		win.batchPanel.visible = win.qualityPanel.visible = settings.isBatchProcessing;
 		win.pogressPanel.visible = false;
-		win.graphics.backgroundColor = win.graphics.newBrush(win.graphics.BrushType.SOLID_COLOR, [0.9, 0.9, 0.9]); 
+		win.graphics.backgroundColor = win.graphics.newBrush(win.graphics.BrushType.SOLID_COLOR, [0.31, 0.31, 0.31]); 
 		var rdoSizes = win.preferSizePanel.preferSizeGroup.children;
 		
 		win.batchPanel.pathGroup.btnSelectInputDir.onClick = function() {
@@ -98,11 +98,10 @@ function USMResize( ) {
 			win.preferSizePanel.preferSizeGroup.size0.value = true;
 		}
 		
-		win.preferSizePanel.preferSizeGroup.txtCustomSize.addEventListener("changing", function(k){
-			if( ! isInteger(this.text) ) {
-				alert("Accept Number Only", "Notice", true);
-				this.active = true;
-			}
+		win.preferSizePanel.preferSizeGroup.txtCustomSize.addEventListener("keyup", keybordInputFilter_IntNumber ); 
+		
+		win.preferSizePanel.preferSizeGroup.txtCustomSize.addEventListener("keyup", function( e ){
+			var validValue = keybordInputFilter_IntNumber( e );
 		}); 
 		
 		win.qualityPanel.qualityGroup.slQuailty.onChanging = function () {
@@ -110,39 +109,103 @@ function USMResize( ) {
 		} 
 		
 		
-		win.qualityPanel.qualityGroup.txtQuality.addEventListener("keydown", function(k){
+		win.qualityPanel.qualityGroup.txtQuality.addEventListener("keyup", function( e ){
+			var validValue = keybordInputFilter_IntNumber( e );
+			if( validValue ) {
+	
+				if( validValue > 100 )
+					validValue = 100;
+				if( validValue.toString().length > 1 && validValue < 50 )
+					validValue = 50;
+				
+				win.qualityPanel.qualityGroup.slQuailty.value = validValue;
+				this.text = validValue;
+			} else {
+				win.qualityPanel.qualityGroup.slQuailty.value = 0;
+			}
 			
 		}); 
 		
-		win.qualityPanel.qualityGroup.txtQuality.onChanging = function( e ){
-			//alert(win.qualityPanel.qualityGroup.txtQuality.text);
-		}
+		win.qualityPanel.qualityGroup.txtQuality.addEventListener("blur", function( e ){
+			
+			if( this.text.length == 0 )
+				this.text = 90;
+			else if( parseInt(this.text) < 50 )
+				this.text = 50;
+			else if( parseInt(this.text) > 100 )
+				this.text = 100;
+			
+			win.qualityPanel.qualityGroup.slQuailty.value = parseInt(this.text);
+		});
 		
 		
-		
+		//Amount
 		win.USMPanel.amountGroup.slAmount.onChanging = function () {
 			win.USMPanel.amountGroup.txtAmount.text = parseInt(win.USMPanel.amountGroup.slAmount.value);
 			usmSettingsChanged();
 		} 
+		
+		win.USMPanel.amountGroup.txtAmount.addEventListener("keyup", function( e ){
+			var validValue = keybordInputFilter_IntNumber( e );
+			if( validValue ) {
+				if( validValue > 500 )
+					validValue = 500;
+				win.USMPanel.amountGroup.slAmount.value = validValue;
+				this.text = validValue;
+			} else {
+				win.USMPanel.amountGroup.slAmount.value = 0;
+			}
+			
+			usmSettingsChanged();
+		}); 
+		
+		
 		
 		win.USMPanel.radiustGroup.slRadius.onChanging = function () {
 			win.USMPanel.radiustGroup.txtRadius.text = parseFloat(win.USMPanel.radiustGroup.slRadius.value).toFixed(1);
 			usmSettingsChanged();
 		} 
 		
+		win.USMPanel.radiustGroup.txtRadius.addEventListener("keyup", function( e ){
+			var validValue = keybordInputFilter_FloatNumber( e );
+			if( validValue ) {
+				if( validValue > 10 )
+					validValue = 10;
+				win.USMPanel.radiustGroup.slRadius.value = validValue;
+				this.text = validValue;
+			} else {
+				win.USMPanel.radiustGroup.slRadius.value = 0;
+			}
+			
+			usmSettingsChanged();
+		}); 
+		
+		
 		win.USMPanel.thresholdGroup.slThreshold.onChanging = function () {
 			win.USMPanel.thresholdGroup.txtThreshold.text = parseInt(win.USMPanel.thresholdGroup.slThreshold.value);
 			usmSettingsChanged();
 		} 
 		
-		win.USMPanel.presetGroup.preset1.onClick = function(){
-			win.USMPanel.amountGroup.slAmount.value = 200;
-			win.USMPanel.radiustGroup.slRadius.value = 0.2;
-			win.USMPanel.thresholdGroup.slThreshold.value = 0;
+		win.USMPanel.thresholdGroup.txtThreshold.addEventListener("keyup", function( e ){
+			var validValue = keybordInputFilter_IntNumber( e );
+			if( validValue ) {
+				if( validValue > 255 )
+					validValue = 255;
+				win.USMPanel.thresholdGroup.slThreshold.value = validValue;
+				this.text = validValue;
+			} else {
+				win.USMPanel.thresholdGroup.slThreshold.value = 0;
+			}
 			
-			win.USMPanel.amountGroup.txtAmount.text = parseInt(win.USMPanel.amountGroup.slAmount.value);
-			win.USMPanel.radiustGroup.txtRadius.text = parseFloat(win.USMPanel.radiustGroup.slRadius.value);
-			win.USMPanel.thresholdGroup.txtThreshold.text = parseInt(win.USMPanel.thresholdGroup.slThreshold.value);
+			usmSettingsChanged();
+		}); 
+		
+		win.USMPanel.presetGroup.preset1.onClick = function(){
+			applyUSMSelection(this);
+		}
+		
+		win.USMPanel.presetGroup.preset2.onClick = function(){
+			applyUSMSelection(this);
 		}
 		
 	
@@ -154,10 +217,14 @@ function USMResize( ) {
 		var radius = parseFloat(win.USMPanel.radiustGroup.slRadius.value).toFixed(1);
 		var threshold = parseInt(win.USMPanel.thresholdGroup.slThreshold.value);
 		
-		if( amount == 200 && radius == 0.2 && threshold == 0 )
+		win.USMPanel.presetGroup.preset1.value = false;
+		win.USMPanel.presetGroup.preset2.value = false; 
+		
+		if( amount == 100 && radius == 0.2 && threshold == 0 ) 
 			win.USMPanel.presetGroup.preset1.value = true;
-		else
-			win.USMPanel.presetGroup.preset1.value = false;
+		
+		if( amount == 200 && radius == 0.2 && threshold == 0 ) 
+			win.USMPanel.presetGroup.preset2.value = true;
 	}
 	
 	batchResize = function( ) {
@@ -190,6 +257,120 @@ function USMResize( ) {
 	isInteger = function( x ) { 
 		 return (x == parseInt(x));
 	} 
+	
+	
+	keybordInputFilter_IntNumber = function( e ) {
+		var keyName = e.keyName.toLowerCase();
+		if( keyName == "backspace" || keyName == "tab" || keyName == "enter" || keyName == "delete" || keyName == "space"  ) {
+			if( e.target.length > 0 ) {
+				e.target.text = parseInt(e.target.text);
+			} else {
+				e.target.text = 0;
+			}
+			
+			return  parseInt(e.target.text);
+		}
+	
+		if( ! isInteger(keyName) ) {
+			var arrText =  e.target.text.split('');
+			var isValid = true;
+			var validValue = "";
+			for( var i = 0; i < arrText.length; i ++ ) {
+					
+				if( ! isInteger(arrText[i]) ) {
+					isValid = false;
+				}else {
+					validValue += arrText[i];
+				}
+			}
+				
+			if( ! isValid ) {
+				if( validValue > 0 )
+					e.target.text = parseInt(validValue);
+				else
+					e.target.text = "";
+		
+				alert("Accept Number Only", "Notice", true);
+			}
+		
+			e.target.active = true;
+		} else {
+			e.target.text = parseInt(e.target.text);
+		}
+		
+		return parseInt(e.target.text);
+	}
+	
+	
+	keybordInputFilter_FloatNumber = function( e ) {
+		var keyName = e.keyName.toLowerCase();
+		var keyCode = e.keyIdentifier.toLowerCase();
+		
+		if( keyName == "backspace" || keyName == "tab" || keyName == "enter" || keyName == "delete" || keyName == "space" || keyName == "left" || keyName == "right" ) {
+			if( e.target.length > 0 ) {
+				e.target.text = parseFloat(e.target.text);
+			} else {
+				e.target.text = 0;
+			}
+			
+			return  parseFloat(e.target.text);
+		}
+		
+		if( keyCode == "u+002e" ) {
+			var text = e.target.text;
+			var firstIndex = text.indexOf( "." );
+			if(firstIndex > -1) {
+				text = text.substr(firstIndex + 1);
+				
+				if( text.length > 0 && text.indexOf(".") > -1 ) {
+					e.target.text = e.target.text.substr(0, firstIndex + text.indexOf(".") + 1);
+				}
+				return;
+			}
+		}
+	
+		if( ! isInteger(keyName) ) {
+			var arrText =  e.target.text.split('');
+			var isValid = true;
+			var validValue = "";
+			for( var i = 0; i < arrText.length; i ++ ) {
+				
+				if( ! isInteger(arrText[i]) ) {
+					isValid = false;
+				}else {
+					validValue += arrText[i];
+				}
+			}
+				
+			if( ! isValid ) {
+				if( validValue > 0 )
+					e.target.text = parseFloat(validValue);
+				else
+					e.target.text = "";
+		
+				alert("Accept Number Only", "Notice", true);
+			}
+		
+			e.target.active = true;
+		} else {
+			e.target.text = parseFloat(e.target.text);
+		}
+		
+		return parseFloat(e.target.text);
+	}
+	
+	
+	applyUSMSelection = function( obj ) {
+		var settings = obj.setting.split("|");
+		
+		win.USMPanel.amountGroup.slAmount.value = parseInt(settings[0]);
+		win.USMPanel.radiustGroup.slRadius.value = parseFloat(settings[1]);
+		win.USMPanel.thresholdGroup.slThreshold.value = parseInt(settings[2]);
+			
+		win.USMPanel.amountGroup.txtAmount.text = parseInt(win.USMPanel.amountGroup.slAmount.value);
+		win.USMPanel.radiustGroup.txtRadius.text = parseFloat(win.USMPanel.radiustGroup.slRadius.value);
+		win.USMPanel.thresholdGroup.txtThreshold.text = parseInt(win.USMPanel.thresholdGroup.slThreshold.value);
+	}
 	
 	resizeDocument = function( doc ){
 		if( doc == null ) return;
@@ -300,22 +481,23 @@ function MyUI() {
 				properties: {borderStyle:'black',},\
 				amountGroup : Group { \
 					lblAmount: StaticText { text: 'Amount    :' }, \
-					slAmount: Slider { minvalue:1, maxvalue:500, value:200, size:[260,12] }, \
-					txtAmount: EditText { text:'200', characters:4, properties:{readonly:true}, justify:'right'} \
+					slAmount: Slider { minvalue:1, maxvalue:500, value:100, size:[260,12] }, \
+					txtAmount: EditText { text:'100', characters:4, properties:{readonly:false}, justify:'right'} \
 				}\
 				radiustGroup : Group { \
 					lblRadius: StaticText { text: 'Radius      :' }, \
 					slRadius: Slider { minvalue:0.1, maxvalue:10, value:0.2, size:[260,12] }, \
-					txtRadius: EditText { text:'0.2', characters:4, properties:{readonly:true}, justify:'right'} \
+					txtRadius: EditText { text:'0.2', characters:4, properties:{readonly:false}, justify:'right'} \
 				}\
 				thresholdGroup : Group { \
 					lblThreshold: StaticText { text: 'Threshold :' }, \
 					slThreshold: Slider { minvalue:0, maxvalue:255, value:0, size:[260,12] }, \
-					txtThreshold: EditText { text:'0', characters:4, properties:{readonly:true}, justify:'right'} \
+					txtThreshold: EditText { text:'0', characters:4, properties:{readonly:false}, justify:'right'} \
 				}\
 				presetGroup: Group { \
 					orientation: 'row', \
-					preset1:RadioButton{ text:'Default Setting', ref:1, value:true }, \
+					preset1:RadioButton{ text:'Smooth sharpen', setting:'100|0.2|0', value:true }, \
+					preset2:RadioButton{ text:'Hard sharpen',  setting:'200|0.2|0', value:false }, \
 				}\
 			},\
 			chkBatchProcessing: Checkbox { text:'Batch Resize' }, \
@@ -331,7 +513,6 @@ function MyUI() {
 					txtInputPath: EditText { characters:25, properties:{readonly:true} }, \
 					btnSelectInputDir: Button { text:'...', size: [60,35] }, \
 				}, \
-				lblOutputPath: StaticText { text:'' }, \
 			}, \
 			qualityPanel: Panel { \
 				orientation: 'column', \
@@ -342,7 +523,7 @@ function MyUI() {
 				qualityGroup : Group { \
 					lblQuality: StaticText { text: 'Image Quality' }, \
 					slQuailty: Slider { minvalue:50, maxvalue:100, value:80, size:[240,10] }, \
-					txtQuality: EditText { text:'90', characters:4, properties:{readonly:true}, justify:'right'} \
+					txtQuality: EditText { text:'90', characters:4, properties:{readonly:false}, justify:'right'} \
 					lblQualityPercent: StaticText { text: '%' }, \
 				}\
 				chkSaveForWeb: Checkbox { text:'Save For Web', value:true }, \
@@ -365,5 +546,3 @@ function MyUI() {
 		return new Window(res);
 	}
 }
-	
-	
