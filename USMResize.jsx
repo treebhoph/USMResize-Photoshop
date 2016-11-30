@@ -21,7 +21,7 @@ function USMResize( ) {
 	var settings = { isBatchProcessing:false, preferSize:0, separatorDir:'/', inputFolderObj:null};
 	var win = null;
 
-	 
+	
 	 /**
 	 *	Entry point function
 	 */
@@ -35,6 +35,10 @@ function USMResize( ) {
 		
 		win.bottomGroup.btnOK.onClick = function(){
 			settings.preferSize = 0;
+			
+			win.pogressPanel.percentGroup.lblTotal.text = "";
+			win.pogressPanel.progressCompleted.value = 0;
+			
 			var rdoSizeSelected = null;
 			for( var i = 0; i < rdoSizes.length; i ++ ) {
 				if( rdoSizes[i].value ) {
@@ -274,6 +278,14 @@ function USMResize( ) {
 			applyUSMSelection(this);
 		}
 		
+		win.USMPanel.presetGroup.preset3.onClick = function(){
+			applyUSMSelection(this);
+		}
+		
+		win.USMPanel.presetGroup.preset4.onClick = function(){
+			applyUSMSelection(this);
+		}
+		
 	
 		win.show();
 	}
@@ -298,11 +310,18 @@ function USMResize( ) {
 		win.USMPanel.presetGroup.preset1.value = false;
 		win.USMPanel.presetGroup.preset2.value = false; 
 		
-		if( amount == 100 && radius == 0.2 && threshold == 0 ) 
+		
+		if( amount == 25 && radius == 0.2 && threshold == 0 ) 
 			win.USMPanel.presetGroup.preset1.value = true;
 		
-		if( amount == 200 && radius == 0.2 && threshold == 0 ) 
+		if( amount == 50 && radius == 0.2 && threshold == 0 ) 
 			win.USMPanel.presetGroup.preset2.value = true;
+		
+		if( amount == 100 && radius == 0.2 && threshold == 0 ) 
+			win.USMPanel.presetGroup.preset3.value = true;
+		
+		if( amount == 200 && radius == 0.2 && threshold == 0 ) 
+			win.USMPanel.presetGroup.preset4.value = true;
 	}
 	
 	batchResize = function( ) {
@@ -491,6 +510,25 @@ function USMResize( ) {
 		}
 		
 	}
+	
+	this.saveAsTextFile = function(filePath, content) {
+		    var saveFile = new File(filePath);
+
+		    saveFile.encoding = "UTF8";
+		    saveFile.open("w");
+		    if (saveFile.error != "")
+			  return saveFile.error;
+
+		    saveFile.write(content);
+		    if (saveFile.error != "")
+			  return saveFile.error;
+
+		    saveFile.close();
+		    if (saveFile.error != "")
+			  return saveFile.error;
+
+		    return "";
+	}	
 		
 }
 
@@ -542,8 +580,10 @@ function MyUI() {
 				}\
 				presetGroup: Group { \
 					orientation: 'row', \
-					preset1:RadioButton{ text:'Soft sharpen', setting:'100|0.2|0', value:true }, \
-					preset2:RadioButton{ text:'Hard sharpen',  setting:'200|0.2|0', value:false }, \
+					preset1:RadioButton{ text:'Portrait Soft', setting:'25|0.2|0', value:false }, \
+					preset2:RadioButton{ text:'Portrait Hard', setting:'50|0.2|0', value:false }, \
+					preset3:RadioButton{ text:'Landscape Soft', setting:'100|0.2|0', value:true }, \
+					preset4:RadioButton{ text:'Landscape Hard',  setting:'200|0.2|0', value:false }, \
 				}\
 			},\
 			chkBatchProcessing: Checkbox { text:'Batch Resize' }, \
