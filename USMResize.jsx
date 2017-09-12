@@ -78,8 +78,12 @@ function USMResize( ) {
 			props.threshold = parseInt(win.USMPanel.thresholdGroup.slThreshold.value);
 			
 			if( settings.inputFolderObj == null ) {
-				var doc = app.activeDocument;
-				resizeDocument(doc);
+				if( app.documents.length == 0 ) {
+					alert("You must to open a picture", "Notice", true);
+					return;
+				} 
+				
+				resizeDocument(app.activeDocument);
 			} else {
 				win.pogressPanel.visible = true;
 				batchResize();
@@ -548,10 +552,10 @@ function MyUI() {
 				properties: {borderStyle:'black',},\
 				preferSizeGroup: Group { \
 					orientation: 'row', \
-					size1:RadioButton{ text:'800px', ref:800 }, \
-					size2:RadioButton{ text:'960px', ref:960 }, \
-					size3:RadioButton{ text:'1200px', ref:1200, value:true }, \
-					size4:RadioButton{ text:'1800px', ref:1800 }, \
+					size1:RadioButton{ text:'960px', ref:960 }, \
+					size2:RadioButton{ text:'1200px', ref:1200 }, \
+					size3:RadioButton{ text:'1800px', ref:1800 }, \
+					size4:RadioButton{ text:'Facebook 2048px', ref:2048, value:true }, \
 					size0:RadioButton{ text:'', ref:0 }, \
 					txtCustomSize: EditText { characters:5, properties:{readonly:false}, justify:'right' }, \
 					lblCustomSizePx: StaticText { text: 'px' }, \
@@ -581,9 +585,9 @@ function MyUI() {
 				presetGroup: Group { \
 					orientation: 'row', \
 					preset1:RadioButton{ text:'Portrait Soft', setting:'25|0.2|0', value:false }, \
-					preset2:RadioButton{ text:'Portrait Hard', setting:'50|0.2|0', value:false }, \
+					preset2:RadioButton{ text:'Portrait Clear', setting:'38|0.2|0', value:false }, \
 					preset3:RadioButton{ text:'Landscape Soft', setting:'100|0.2|0', value:true }, \
-					preset4:RadioButton{ text:'Landscape Hard',  setting:'200|0.2|0', value:false }, \
+					preset4:RadioButton{ text:'Landscape Clear',  setting:'200|0.2|0', value:false }, \
 				}\
 			},\
 			chkBatchProcessing: Checkbox { text:'Batch Resize' }, \
@@ -608,8 +612,8 @@ function MyUI() {
 				properties: {borderStyle:'black',},\
 				qualityGroup : Group { \
 					lblQuality: StaticText { text: 'Image Quality' }, \
-					slQuailty: Slider { minvalue:50, maxvalue:100, value:80, size:[240,10] }, \
-					txtQuality: EditText { text:'90', characters:4, properties:{readonly:false}, justify:'right'} \
+					slQuailty: Slider { minvalue:50, maxvalue:100, value:95, size:[240,10] }, \
+					txtQuality: EditText { text:'95', characters:4, properties:{readonly:false}, justify:'right'} \
 					lblQualityPercent: StaticText { text: '%' }, \
 				}\
 				chkSaveForWeb: Checkbox { text:'Save For Web', value:true }, \
